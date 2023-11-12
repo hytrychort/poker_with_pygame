@@ -38,9 +38,10 @@ koord_cards_opponents = [(350, 70), (700, 70), (110, 270), (1000, 270)]
 
 active_bots = [True, True, True, True]
 
+card_1, card_2 = 0, 0
 
-five_cards = {}
-list_five_cards = [rubashka for i in range(5)]
+five_cards = [0, 0, 0, 0, 0]
+list_five_cards = {f"{i}":rubashka for i in range(5)}
 images_of_five_cards = list_five_cards.copy()
 
 money = 0

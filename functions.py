@@ -1,6 +1,7 @@
 import pygame
 from initializations import *
 from all_texts import *
+from combinations import *
 
 RESTART = False
 INFO = False
@@ -21,29 +22,31 @@ def Update_All_Cards(count_opponents = 4):
         for i in range(2):
             card_bot_buff = choice(list(cards.keys()))
             card_bot = (card_bot_buff, cards[f"{card_bot_buff}"])
+            del cards[f"{card_bot_buff}"]
             cards_of_opponents[opponent][i] = card_bot     #Обновление карт противников
 
     for i in range(5):
         card_on_table_buff = choice(list(cards.keys()))
         card_on_table = (card_on_table_buff, cards[f"{card_on_table_buff}"])
         del cards[f"{card_on_table[0]}"]
-        five_cards[f""] = card_on_table
-        five_cards[f"{i}"] = card_on_table     #Обновление пяти карт на столе
-
+        five_cards[i] = card_on_table        #Обновление пяти карт на столе
 
     images_of_five_cards = list_five_cards.copy()
 
 
-def Draw_five_Cards(count_open_cards = 0):
+def Draw_Five_Cards():
+    for i in range(1, 6):
+        screen.blit(images_of_five_cards[f"{i - 1}"], (300 + (i * 85), 270))
+
+
+def Open_Five_Cards(count_open_cards = 0):
     if count_open_cards == 1:
         for i in range(3):
-            images_of_five_cards[i] = five_cards[f"{list(five_cards.keys())[i]}"]   #Подмена картинки рубашки на карту
+            images_of_five_cards[f"{i}"] = five_cards[i][1]   #Подмена картинки рубашки на карту
 
     elif count_open_cards == 2 or count_open_cards == 3:
-        images_of_five_cards[count_open_cards + 1] = five_cards[count_open_cards + 1]
-    print(type(images_of_five_cards[0][1]) == type(rubashka))
-    for i in range(1, 6):
-        screen.blit(images_of_five_cards[i - 1][1], (300 + (i * 85), 270))
+        images_of_five_cards[f"{count_open_cards + 1}"] = five_cards[count_open_cards + 1][1]
+
 
 def Info(mouse):
     global INFO
@@ -66,7 +69,7 @@ def Close(mouse):
        screen.blit(restart_label, restart_label_rect)
        if restart_label_rect.collidepoint(mouse) and pygame.mouse.get_pressed()[0]:
            Update_All_Cards()
-           RESTART = False
+           RESTART=False
 
 
 def where_touch(mouse):
@@ -84,7 +87,6 @@ def where_touch(mouse):
     else:
         return True
 
-
 def Opponents(opponents):
     for opponent in range(len(opponents) - 1, -1, -1):
         if opponents[opponent]:
@@ -96,17 +98,28 @@ def Opponents(opponents):
                 screen.blit(rubashka_r, (koord_cards_opponents[opponent][0], koord_cards_opponents[opponent][1] + 80))
 
 
-def Combinations(five_cards = None, cards = None):
+def Mass_to_combinations(five_cards = None, cards = None):
     array_cards = []
-    for i in range(5): array_cards.append(list(five_cards.keys())[i][:list(five_cards.keys())[i].find('_')])
-    for i in range(2): array_cards.append(cards[i][:cards[i].find('_')])
+    for i in range(5): array_cards.append(five_cards[i][0][:five_cards[i][0].find("_")])
+    for i in range(2): array_cards.append(cards[i][0][:cards[i][0].find('_')])
     slovar_cards = {}
     for i in array_cards:
         if i not in slovar_cards:
             slovar_cards[f'{i}'] = array_cards.count(i)
     print(slovar_cards)
+    return slovar_cards
 
-            
+
+def Hho_win(count_opponents=4, five_cards = None):
+    rank_players = {f"player{i}":0 for i in range(count_opponents+1)}
+    rank_players[f"player0"] = Combinations(Mass_to_combinations(five_cards, (card_1, card_2)))
+
+    for i, element in enumerate(list(rank_players.keys())):
+        if i == 0:  continue
+        print(cards_of_opponents[i-1])
+        rank_players[f"{element}"] = Combinations(Mass_to_combinations(five_cards, cards_of_opponents[i-1]))
+    print(rank_players)
+
 
 def draw():
     global card_1, card_2, five_cards
@@ -122,8 +135,9 @@ def draw():
     screen.blit(check_text, (check_button.x + 35, check_button.y + 10))
     screen.blit(raize_text, (raize_or_VABank_button.x + 35, raize_or_VABank_button.y + 10))
     Opponents(active_bots)
-    Draw_five_Cards(1)
+    Draw_Five_Cards()
+
     Close(mouse)
     Info(mouse)
-    Combinations(five_cards, (card_1, card_2))
+
     pygame.display.update()
